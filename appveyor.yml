@@ -1,14 +1,10 @@
 version: 1.0.{build}
 
-configuration: Release
-
 os: Visual Studio 2015
 
 install:
   - cmd: set PATH=C:\Program Files (x86)\MSBuild\14.0\Bin;%PATH%
 
-build: 
-  verbosity: minimal
-
-before_build:
+build_script:
   - nuget restore
+  - msbuild "ReferencePathManager.sln" /p:configuration=Release /p:DeployExtension=false /p:ZipPackageCompressionLevel=normal /v:m /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
