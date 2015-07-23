@@ -219,7 +219,7 @@
             this.Controls.Add(this.panel1);
             this.Name = "SolutionReferencePathsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "SolutionReferencePathsForm";
+            this.Text = "Solution Reference Paths";
             this.panel1.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
