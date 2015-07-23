@@ -4,15 +4,19 @@
         <Identity Id="ReferencePathManager.Juan Vidal Pich.07ef1b00-639b-4393-aa2c-97d57ced54a9" Version="1.0" Language="en-US" Publisher="Juan Vidal Pich" />
         <DisplayName>Reference Path Manager</DisplayName>
         <Description xml:space="preserve">Set reference paths for all projects from a centralized location.</Description>
+        <MoreInfo>https://github.com/juanevp/ReferencePathManager</MoreInfo>
+        <License>..\LICENSE</License>
+        <Tags>Reference Paths</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0]" />
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0,15.0)" />
+        <InstallationTarget Version="[12.0,13.0)" Id="Microsoft.VisualStudio.Community" />
     </Installation>
     <Dependencies>
         <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-      <Dependency Id="Microsoft.VisualStudio.MPF.14.0" DisplayName="Visual Studio MPF 14.0" d:Source="Installed" Version="[14.0]" />
-  </Dependencies>
-  <Assets>
-    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-  </Assets>
+        <Dependency Id="Microsoft.VisualStudio.MPF.12.0" DisplayName="Visual Studio MPF 12.0" d:Source="Installed" Version="[12.0,15.0)" />
+    </Dependencies>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    </Assets>
 </PackageManifest>
