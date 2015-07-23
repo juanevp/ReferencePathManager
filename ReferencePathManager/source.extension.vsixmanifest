@@ -5,7 +5,9 @@
         <DisplayName>Reference Path Manager</DisplayName>
         <Description xml:space="preserve">Set reference paths for all projects from a centralized location.</Description>
         <MoreInfo>https://github.com/juanevp/ReferencePathManager</MoreInfo>
-        <License>..\LICENSE</License>
+        <License>Resources\LICENSE</License>
+        <Icon>Resources\icon.png</Icon>
+        <PreviewImage>Resources\preview.png</PreviewImage>
         <Tags>Reference Paths</Tags>
     </Metadata>
     <Installation>
