@@ -21,6 +21,7 @@ On the left panel all the projects from the current solution are listed. When on
 Paths present in all selected projects are shown in black, when missing from some they are shown in gray.
 The available actions are:
 - `Add`: opens a directory dialog. The path selected will be added to all selected projects.
+- `Add From Clipboard`: retrieves the path from system's Clipboard. The path will be added to all selected projects. The same action can be triggered by using "Ctrl + V" keyboard shortcut.
 - `Delete`: removes the selected paths from the currently selected projects.
 - `Delete All`:  removes the selected paths from all projects in the solution.
 - `Propagate`:  ensures that the selected paths are present in the currently selected projects.
