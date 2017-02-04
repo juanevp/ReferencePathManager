@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
+using ReferencePathManager.Properties;
 
 namespace ReferencePathManager
 {
@@ -50,9 +52,20 @@ namespace ReferencePathManager
 			{
 				ProjectsLv.Items.Add(new ListViewItem(proj.Name){Tag = proj});
 			}
+
+		    this.KeyPreview = true;
+            this.KeyDown += SolutionReferencePathsForm_KeyDown;
 		}
 
-		private void ProjectsLv_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        private void SolutionReferencePathsForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.V && e.Modifiers == Keys.Control)
+            {
+                HandleAddFromClipboard();
+            }
+        }
+
+        private void ProjectsLv_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
 		{
 			RefreshPathsLv();
 		}
@@ -100,7 +113,7 @@ namespace ReferencePathManager
 		}
 		private void DeleteAllButton_Click(object sender, EventArgs e)
 		{
-			if (MessageBox.Show("Los paths se borrarán de todos los proyectos. Continuar?", null, MessageBoxButtons.OKCancel) != DialogResult.OK) 
+			if (MessageBox.Show(Resources.InfoRemoveAllPaths, null, MessageBoxButtons.OKCancel) != DialogResult.OK) 
 				return;
 			DeletePaths(paths.Keys, GetSelectedPaths());
 			RefreshPathsLv();
@@ -112,7 +125,37 @@ namespace ReferencePathManager
 			AppendPath(GetSelectedProjects(), FolderBrowserDialog.SelectedPath);
 			RefreshPathsLv();
 		}
-		private void PropagateButton_Click(object sender, EventArgs e)
+
+	    private void HandleAddFromClipboard(object sender, EventArgs e) => AddPathFromClipboard();
+
+	    private void HandleAddFromClipboard() => AddPathFromClipboard();
+
+        private void AddPathFromClipboard()
+        {
+            var path = ClipboardManager.GetTextFromClipboard();
+            if (String.IsNullOrEmpty(path))
+            {
+                ShowErrorMsgBox(Resources.ErrorClipboardContainsNoText);
+                return;
+            }
+
+            if (!IsPathValid(path))
+            {
+                ShowErrorMsgBox(String.Format(Resources.ErrorInvalidPath, path));
+                return;
+            }
+
+            AppendPath(GetSelectedProjects(), path);
+            RefreshPathsLv();
+        }
+
+	    private bool IsPathValid(string path)
+	    {
+	        return !String.IsNullOrEmpty(path) && Directory.Exists(path);
+	    }
+
+
+        private void PropagateButton_Click(object sender, EventArgs e)
 		{
 			AppendPaths(GetSelectedProjects(), GetSelectedPaths());
 			RefreshPathsLv();
@@ -166,7 +209,15 @@ namespace ReferencePathManager
 			}
 		}
 
-		private readonly Dictionary<Project, List<string>> paths = new Dictionary<Project, List<string>>();
+        private static void ShowErrorMsgBox(string errorTxt)
+        {
+            MessageBox.Show(errorTxt,
+                Resources.ErrorMsgBoxTitle,
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Exclamation);
+        }
+
+        private readonly Dictionary<Project, List<string>> paths = new Dictionary<Project, List<string>>();
 		private readonly Dictionary<Project, Property> pathProps = new Dictionary<Project, Property>();
 		private readonly DTE2 applicationObject;
 
