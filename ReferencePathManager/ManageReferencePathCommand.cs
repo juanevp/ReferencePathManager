@@ -1,16 +1,8 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="ManageReferencePathCommand.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.ComponentModel.Design;
-using System.Globalization;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 
 namespace ReferencePathManager
 {
