@@ -1,225 +1,177 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
 using ReferencePathManager.Properties;
+using VSLangProj;
 
 namespace ReferencePathManager
 {
-	public partial class SolutionReferencePathsForm : Form
-	{
-		public SolutionReferencePathsForm(DTE2 applicationObject)
-		{
-			this.applicationObject = applicationObject;
-			InitializeComponent();
-		}
-
-		protected override void OnLoad(EventArgs e)
-		{
-			base.OnLoad(e);
-			foreach (Project proj in applicationObject.Solution.Projects)
-			{
-				var props = proj.Properties;
-				if (props == null || proj.Kind != "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}" /*PrjKind.prjKindCSharpProject*/ && proj.Kind != "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}" /*PrjKind.prjKindVBProject*/)
-					continue;
-				var values = new List<string>();
-				paths[proj] = values;
-				Property prop = null;
-				for(var i = 1; i <= props.Count; i++)
-				{
-					var p = props.Item(i);
-					if (p.Name == "ReferencePath")
-					{
-						prop = p;
-						break;
-					}
-				}
-				if (prop == null)
-					continue;
-				pathProps[proj] = prop;
-				var value = (string)prop.Value;
-				if (!string.IsNullOrEmpty(value))
-					values.AddRange(value.Split(';'));
-			}
-			foreach (var proj in paths.Keys)
-			{
-				ProjectsLv.Items.Add(new ListViewItem(proj.Name){Tag = proj});
-			}
-
-		    this.KeyPreview = true;
-            this.KeyDown += SolutionReferencePathsForm_KeyDown;
-		}
-
-        private void SolutionReferencePathsForm_KeyDown(object sender, KeyEventArgs e)
+    public partial class SolutionReferencePathsForm : Form
+    {
+        public SolutionReferencePathsForm(DTE2 applicationObject)
         {
-            if (e.KeyCode == Keys.V && e.Modifiers == Keys.Control)
-            {
-                HandleAddFromClipboard();
-            }
+            manager = ProjectReferencePathsManager.Load(applicationObject.Solution);
+            InitializeComponent();
         }
 
-        private void ProjectsLv_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
-		{
-			RefreshPathsLv();
-		}
-
-		private void RefreshPathsLv()
-		{
-			var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-			var selected = ProjectsLv.Items.Cast<ListViewItem>().Where(s => s.Selected).ToList();
-			foreach (var item in selected)
-			{
-				var proj = (Project)item.Tag;
-				List<string> pathlist;
-				if (paths.TryGetValue(proj, out pathlist))
-				{
-					foreach (var path in pathlist)
-					{
-						int count;
-						dict.TryGetValue(path, out count);
-						dict[path] = ++count;
-					}
-				}
-			}
-			PathsLv.Items.Clear();
-			foreach (var path in dict.Keys.OrderBy(s => s))
-			{
-				var item = new ListViewItem(path);
-				if (dict[path] < selected.Count)
-					item.ForeColor = Color.Gray;
-				PathsLv.Items.Add(item);
-			}
-		}
-		private void AcceptBtn_Click(object sender, EventArgs e)
-		{
-			foreach (var proj in paths.Keys)
-			{
-				var prop = pathProps[proj];
-				var path = string.Join(";", paths[proj].ToArray());
-				prop.Value = path;
-			}
-		}
-		private void DeleteButton_Click(object sender, EventArgs e)
-		{
-			DeletePaths(GetSelectedProjects(), GetSelectedPaths());
-			RefreshPathsLv();
-		}
-		private void DeleteAllButton_Click(object sender, EventArgs e)
-		{
-			if (MessageBox.Show(Resources.InfoRemoveAllPaths, null, MessageBoxButtons.OKCancel) != DialogResult.OK) 
-				return;
-			DeletePaths(paths.Keys, GetSelectedPaths());
-			RefreshPathsLv();
-		}
-		private void AddButton_Click(object sender, EventArgs e)
-		{
-			if (FolderBrowserDialog.ShowDialog() != DialogResult.OK)
-				return;
-			AppendPath(GetSelectedProjects(), FolderBrowserDialog.SelectedPath);
-			RefreshPathsLv();
-		}
-
-	    private void HandleAddFromClipboard(object sender, EventArgs e) => AddPathFromClipboard();
-
-	    private void HandleAddFromClipboard() => AddPathFromClipboard();
-
-        private void AddPathFromClipboard()
+        protected override void OnLoad(EventArgs e)
         {
-            var path = ClipboardManager.GetTextFromClipboard();
-            if (String.IsNullOrEmpty(path))
-            {
-                ShowErrorMsgBox(Resources.ErrorClipboardContainsNoText);
-                return;
-            }
+            base.OnLoad(e);
+            var items = manager.ProjectInfos.Select(s => new ListViewItem(s.Name) { Tag = s });
+            ProjectsLv.Items.AddRange(items.ToArray());
+        }
 
-            if (!IsPathValid(path))
-            {
-                ShowErrorMsgBox(String.Format(Resources.ErrorInvalidPath, path));
+        private void ProjectsLv_ItemSelectionChanged(object sender, EventArgs e) => RefreshPathsLv();
+        private void AcceptBtn_Click(object sender, EventArgs e)
+        {
+            manager.SavePaths();
+        }
+        private void DeleteButton_Click(object sender, EventArgs e)
+        {
+            manager.RemovePaths(GetSelectedPaths(), GetSelectedProjectInfos());
+            RefreshPathsLv();
+        }
+        private void DeleteAllButton_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show(Resources.DeletePathsFromAllProjects, "", MessageBoxButtons.OKCancel) != DialogResult.OK)
                 return;
-            }
-
-            AppendPath(GetSelectedProjects(), path);
+            manager.RemovePaths(GetSelectedPaths());
+            RefreshPathsLv();
+        }
+        private void AddButton_Click(object sender, EventArgs e)
+        {
+            if (FolderBrowserDialog.ShowDialog() != DialogResult.OK)
+                return;
+            manager.AddPath(FolderBrowserDialog.SelectedPath, GetSelectedProjectInfos());
+            RefreshPathsLv();
+        }
+        private void PropagateButton_Click(object sender, EventArgs e)
+        {
+            manager.AddPaths(GetSelectedPaths(), GetSelectedProjectInfos());
+            RefreshPathsLv();
+        }
+        private void PropagateAllButton_Click(object sender, EventArgs e)
+        {
+            manager.AddPaths(GetSelectedPaths());
             RefreshPathsLv();
         }
 
-	    private bool IsPathValid(string path)
-	    {
-	        return !String.IsNullOrEmpty(path) && Directory.Exists(path);
-	    }
-
-
-        private void PropagateButton_Click(object sender, EventArgs e)
-		{
-			AppendPaths(GetSelectedProjects(), GetSelectedPaths());
-			RefreshPathsLv();
-		}
-		private void PropagateAllButton_Click(object sender, EventArgs e)
-		{
-			AppendPaths(paths.Keys, GetSelectedPaths());
-			RefreshPathsLv();
-		}
-		private IEnumerable<string> GetSelectedPaths()
-		{
-			return PathsLv.Items.Cast<ListViewItem>().Where(s => s.Selected).Select(s => s.Text);
-		}
-		private IEnumerable<Project> GetSelectedProjects()
-		{
-			return ProjectsLv.Items.Cast<ListViewItem>().Where(s => s.Selected).Select(s => (Project)s.Tag);
-		}		
-		private void DeletePaths(IEnumerable<Project> projects, IEnumerable<string> pathList)
-		{
-			foreach (var path in pathList)
-			{
-				DeletePath(projects, path);
-			}
-		}
-		private void DeletePath(IEnumerable<Project> projects, string path)
-		{
-			foreach (var proj in projects)
-			{
-				var list = paths[proj];
-				for(var i = list.Count - 1; i >= 0; i--)
-				{
-					if (string.Equals(list[i], path, StringComparison.OrdinalIgnoreCase))
-						list.RemoveAt(i);
-				}
-			}
-		}
-		private void AppendPaths(IEnumerable<Project> projects, IEnumerable<string> pathList)
-		{
-			foreach (var path in pathList)
-			{
-				AppendPath(projects, path);
-			}
-		}
-		private void AppendPath(IEnumerable<Project> projects, string path)
-		{
-			foreach (var proj in projects)
-			{
-				var list = paths[proj];
-				if (!list.Contains(path, StringComparer.OrdinalIgnoreCase))
-					list.Add(path);
-			}
-		}
-
-        private static void ShowErrorMsgBox(string errorTxt)
+        private void RefreshPathsLv()
         {
-            MessageBox.Show(errorTxt,
-                Resources.ErrorMsgBoxTitle,
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Exclamation);
+            var dict = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var selected = GetSelectedProjectInfos().ToList();
+            foreach (var path in selected.SelectMany(s => s.Paths))
+            {
+                dict.TryGetValue(path, out var count);
+                dict[path] = ++count;
+            }
+            PathsLv.Items.Clear();
+            foreach (var path in dict.Keys.OrderBy(s => s))
+            {
+                var item = new ListViewItem(path);
+                if (dict[path] < selected.Count)
+                    item.ForeColor = Color.Gray;
+                PathsLv.Items.Add(item);
+            }
+        }
+        private IEnumerable<string> GetSelectedPaths()
+        {
+            return PathsLv.Items.Cast<ListViewItem>().Where(s => s.Selected).Select(s => s.Text);
+        }
+        private IEnumerable<ProjectInfo> GetSelectedProjectInfos()
+        {
+            return ProjectsLv.Items.Cast<ListViewItem>().Where(s => s.Selected).Select(s => (ProjectInfo)s.Tag);
         }
 
-        private readonly Dictionary<Project, List<string>> paths = new Dictionary<Project, List<string>>();
-		private readonly Dictionary<Project, Property> pathProps = new Dictionary<Project, Property>();
-		private readonly DTE2 applicationObject;
+        private readonly ProjectReferencePathsManager manager;
+    }
 
-	}
+    internal class ProjectReferencePathsManager
+    {
+        private ProjectReferencePathsManager(IEnumerable<ProjectInfo> projectInfos)
+        {
+            foreach (var projectInfo in projectInfos)
+            {
+                var value = (string)projectInfo.ReferencePathProperty.Value;
+                if (!string.IsNullOrEmpty(value))
+                    projectInfo.Paths.AddRange(value.Split(';'));
+                projectInfoMap[projectInfo.Project] = projectInfo;
+            }
+        }
+
+        public static ProjectReferencePathsManager Load(Solution sln)
+        {
+            var infos = sln.Projects.Cast<Project>().Select(s => new ProjectInfo(s, s.Name))
+                .Where(s => s.ReferencePathProperty != null);
+            return new ProjectReferencePathsManager(infos);
+        }
+
+        public void SavePaths()
+        {
+            foreach (var proj in projectInfoMap.Values)
+            {
+                proj.ReferencePathProperty.Value = string.Join(";", proj.Paths.ToArray());
+            }
+        }
+        public void RemovePaths(IEnumerable<string> pathList, IEnumerable<ProjectInfo> projectInfos = null)
+        {
+            foreach (var path in pathList)
+            {
+                // ReSharper disable once PossibleMultipleEnumeration
+                RemovePath(path, projectInfos);
+            }
+        }
+        public void RemovePath(string path, IEnumerable<ProjectInfo> projectInfos = null)
+        {
+            foreach (var list in (projectInfos ?? projectInfoMap.Values).Select(s => s.Paths))
+            {
+                list.RemoveAll(s => string.Equals(path, s, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+        public void AddPaths(IEnumerable<string> pathList, IEnumerable<ProjectInfo> projectInfos = null)
+        {
+            foreach (var path in pathList)
+            {
+                // ReSharper disable once PossibleMultipleEnumeration
+                AddPath(path, projectInfos);
+            }
+        }
+        public void AddPath(string path, IEnumerable<ProjectInfo> projectInfos = null)
+        {
+            var pathLists = (projectInfos ?? projectInfoMap.Values).Select(s => s.Paths)
+                .Where(s => !s.Contains(path, StringComparer.OrdinalIgnoreCase));
+            foreach (var list in pathLists)
+            {
+                list.Add(path);
+            }
+        }
+
+        public IEnumerable<ProjectInfo> ProjectInfos => projectInfoMap.Values;
+
+        private readonly Dictionary<Project, ProjectInfo> projectInfoMap = new Dictionary<Project, ProjectInfo>();
+    }
+
+    internal class ProjectInfo
+    {
+        public ProjectInfo(Project project, string name)
+        {
+            Project = project ?? throw new ArgumentNullException(nameof(project));
+            Name = name;
+            var props = project.Properties;
+            if (props != null && supportedProjectKinds.Contains(project.Kind))
+                ReferencePathProperty = props.Cast<Property>().FirstOrDefault(s => s.Name == "ReferencePath");
+        }
+
+        public Project Project { get; }
+        public string Name { get; }
+        public List<string> Paths { get; } = new List<string>();
+        public Property ReferencePathProperty { get; }
+
+        private static readonly string[] supportedProjectKinds = { PrjKind.prjKindCSharpProject, PrjKind.prjKindVBProject };
+    }
 }

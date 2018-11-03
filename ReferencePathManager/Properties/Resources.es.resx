@@ -118,11 +118,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeletePathsFromAllProjects" xml:space="preserve">
-    <value>The paths will be deleted from all projects. Continue?</value>
+    <value>Las rutas serán borradas de todos los proyectos. ¿Continuar?</value>
   </data>
   <data name="ErrorInvalidPath" xml:space="preserve">
     <value>{0}
-Path does not exist</value>
+Ruta inexistente</value>
   </data>
   <data name="ErrorMsgBoxTitle" xml:space="preserve">
     <value>Error</value>

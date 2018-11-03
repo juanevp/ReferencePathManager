@@ -19,7 +19,7 @@ namespace ReferencePathManager.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,16 +61,17 @@ namespace ReferencePathManager.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to System Clipboard contains no proper text!.
+        ///   Looks up a localized string similar to The paths will be deleted from all projects. Continue?.
         /// </summary>
-        internal static string ErrorClipboardContainsNoText {
+        internal static string DeletePathsFromAllProjects {
             get {
-                return ResourceManager.GetString("ErrorClipboardContainsNoText", resourceCulture);
+                return ResourceManager.GetString("DeletePathsFromAllProjects", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The following string is not a valid path: {0}.
+        ///   Looks up a localized string similar to {0}
+        ///Path does not exist.
         /// </summary>
         internal static string ErrorInvalidPath {
             get {
@@ -84,15 +85,6 @@ namespace ReferencePathManager.Properties {
         internal static string ErrorMsgBoxTitle {
             get {
                 return ResourceManager.GetString("ErrorMsgBoxTitle", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Paths will be removed from all the projects. Continue ?.
-        /// </summary>
-        internal static string InfoRemoveAllPaths {
-            get {
-                return ResourceManager.GetString("InfoRemoveAllPaths", resourceCulture);
             }
         }
     }

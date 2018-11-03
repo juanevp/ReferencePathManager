@@ -26,3 +26,5 @@ The available actions are:
 - `Delete All`:  removes the selected paths from all projects in the solution.
 - `Propagate`:  ensures that the selected paths are present in the currently selected projects.
 - `Propagate All`:  ensures that the selected paths are present in all projects from the solution.
+
+Paths can also be added from the clipboard with Ctrl+V.
