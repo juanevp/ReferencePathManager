@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
 using ReferencePathManager.Properties;
-using VSLangProj;
+// ReSharper disable InconsistentNaming
 
 namespace ReferencePathManager
 {
@@ -59,6 +60,11 @@ namespace ReferencePathManager
             manager.AddPaths(GetSelectedPaths());
             RefreshPathsLv();
         }
+        private void SolutionReferencePathsForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.V && e.Modifiers == Keys.Control)
+                AddPathFromClipboard();
+        }
 
         private void RefreshPathsLv()
         {
@@ -85,6 +91,28 @@ namespace ReferencePathManager
         private IEnumerable<ProjectInfo> GetSelectedProjectInfos()
         {
             return ProjectsLv.Items.Cast<ListViewItem>().Where(s => s.Selected).Select(s => (ProjectInfo)s.Tag);
+        }
+        private void AddPathFromClipboard()
+        {
+            if (!Clipboard.ContainsText())
+                return;
+            var path = Clipboard.GetText();
+            TryAddPath(path);
+        }
+        private void TryAddPath(string path)
+        {
+            if (!IsPathValid(path))
+            {
+                ShowErrorMsgBox(string.Format(Resources.ErrorInvalidPath, path));
+                return;
+            }
+            manager.AddPath(path, GetSelectedProjectInfos());
+            RefreshPathsLv();
+        }
+        private static bool IsPathValid(string path) => !string.IsNullOrEmpty(path) && Directory.Exists(path);
+        private static void ShowErrorMsgBox(string errorTxt)
+        {
+            MessageBox.Show(errorTxt, Resources.ErrorMsgBoxTitle, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
 
         private readonly ProjectReferencePathsManager manager;
@@ -186,6 +214,14 @@ namespace ReferencePathManager
         public List<string> Paths { get; } = new List<string>();
         public Property ReferencePathProperty { get; }
 
-        private static readonly string[] supportedProjectKinds = { PrjKind.prjKindCSharpProject, PrjKind.prjKindVBProject };
+        private static readonly string[] supportedProjectKinds = { VSLangProj_PrjKind.prjKindCSharpProject, VSLangProj_PrjKind.prjKindVBProject };
+    }
+
+    //Copied from assembly VSLangProj
+    internal abstract class VSLangProj_PrjKind
+    {
+        public const string prjKindVBProject = "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}";
+        public const string prjKindCSharpProject = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}";
+        public const string prjKindVSAProject = "{13B7A3EE-4614-11D3-9BC7-00C04F79DE25}";
     }
 }

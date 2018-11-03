@@ -221,6 +221,7 @@
             this.Name = "SolutionReferencePathsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Solution Reference Paths";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.SolutionReferencePathsForm_KeyDown);
             this.panel1.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
