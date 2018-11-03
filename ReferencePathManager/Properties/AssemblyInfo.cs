@@ -38,6 +38,6 @@ namespace ReferencePathManager.Properties
 {
     internal static class AssemblyInformation
     {
-        internal const string Version = "1.0.1";
+        internal const string Version = "1.1.0";
     }
 }
