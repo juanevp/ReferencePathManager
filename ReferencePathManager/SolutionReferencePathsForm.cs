@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using EnvDTE;
@@ -106,9 +105,24 @@ namespace ReferencePathManager
 
         public static ProjectReferencePathsManager Load(Solution sln)
         {
-            var infos = sln.Projects.Cast<Project>().Select(s => new ProjectInfo(s, s.Name))
-                .Where(s => s.ReferencePathProperty != null);
+            var infos = GetAllProjectInfos(sln).Where(s => s.ReferencePathProperty != null);
             return new ProjectReferencePathsManager(infos);
+        }
+        private static IEnumerable<ProjectInfo> GetAllProjectInfos(Solution sln)
+        {
+            return sln.Projects.Cast<Project>().SelectMany(s => GetProjectInfos(s, ""));
+        }
+        private static IEnumerable<ProjectInfo> GetProjectInfos(Project project, string folderPath)
+        {
+            if (project.Kind == ProjectKinds.vsProjectKindSolutionFolder)
+            {
+                folderPath += project.Name + "/";
+                return project.ProjectItems.Cast<ProjectItem>()
+                    .Select(s => s.SubProject)
+                    .Where(s => s != null)
+                    .SelectMany(s => GetProjectInfos(s, folderPath));
+            }
+            return new[] { new ProjectInfo(project, folderPath + project.Name) };
         }
 
         public void SavePaths()
