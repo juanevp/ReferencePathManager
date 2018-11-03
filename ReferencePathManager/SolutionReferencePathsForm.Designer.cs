@@ -45,6 +45,7 @@
             this.PropagateAllButton = new System.Windows.Forms.ToolStripButton();
             this.splitter1 = new System.Windows.Forms.Splitter();
             this.FolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
+            this.versionLabel = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
@@ -119,6 +120,7 @@
             // 
             // panel4
             // 
+            this.panel4.Controls.Add(this.versionLabel);
             this.panel4.Controls.Add(this.panel5);
             this.panel4.Controls.Add(this.toolStrip1);
             this.panel4.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -208,6 +210,18 @@
             this.splitter1.TabIndex = 6;
             this.splitter1.TabStop = false;
             // 
+            // versionLabel
+            // 
+            this.versionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.versionLabel.AutoSize = true;
+            this.versionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.versionLabel.Location = new System.Drawing.Point(485, 7);
+            this.versionLabel.Name = "versionLabel";
+            this.versionLabel.Size = new System.Drawing.Size(32, 12);
+            this.versionLabel.TabIndex = 9;
+            this.versionLabel.Text = "v0.0.0";
+            this.versionLabel.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // SolutionReferencePathsForm
             // 
             this.AcceptButton = this.AcceptBtn;
@@ -251,5 +265,6 @@
         private System.Windows.Forms.ToolStripButton PropagateButton;
         private System.Windows.Forms.ToolStripButton PropagateAllButton;
         private System.Windows.Forms.FolderBrowserDialog FolderBrowserDialog;
+        private System.Windows.Forms.Label versionLabel;
     }
 }

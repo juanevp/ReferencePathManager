@@ -24,6 +24,7 @@ namespace ReferencePathManager
             base.OnLoad(e);
             var items = manager.ProjectInfos.Select(s => new ListViewItem(s.Name) { Tag = s });
             ProjectsLv.Items.AddRange(items.ToArray());
+            versionLabel.Text = @"v" + AssemblyInformation.Version;
         }
 
         private void ProjectsLv_ItemSelectionChanged(object sender, EventArgs e) => RefreshPathsLv();
